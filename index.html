@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="AgroSense AI"/>
+<meta name="theme-color" content="#0a1a0f"/>
+<title>AgroSense AI — Farm Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #07120a;
+    --surface: #0e2016;
+    --surface2: #162a1e;
+    --border: #1e3d2a;
+    --green: #2dda72;
+    --green-dim: #1a8a46;
+    --green-glow: #2dda7244;
+    --text: #e4f5eb;
+    --text-dim: #6daa84;
+    --text-muted: #3a6649;
+    --yellow: #f0c040;
+    --red: #f05050;
+    --blue: #50a8f0;
+    --radius: 14px;
+    --tab-h: 64px;
+    --header-h: 64px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    height: var(--header-h);
+    background: linear-gradient(180deg, #0e2016 0%, #0a1a0f 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: radial-gradient(circle at 40% 40%, #3dea82, #16803c);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 18px var(--green-glow);
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: var(--green); letter-spacing: .5px; }
+  .logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 1px; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: #2dda7218; border: 1px solid #2dda7240;
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 11px; color: var(--green);
+    font-family: 'Syne', sans-serif; font-weight: 600;
+  }
+  .live-dot {
+    width: 7px; height: 7px; background: var(--green);
+    border-radius: 50%; animation: pulse 1.4s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--green);
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+  /* ── SCROLL AREA ── */
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 16px calc(var(--tab-h) + 18px);
+  }
+  .tab-pane { display: none; animation: fadeUp .3s ease; }
+  .tab-pane.active { display: block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── BOTTOM NAV ── */
+  #nav {
+    height: var(--tab-h);
+    background: #0e2016;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .nav-btn {
+    flex: 1; background: none; border: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; cursor: pointer; transition: all .2s;
+    color: var(--text-muted);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .nav-btn.active { color: var(--green); }
+  .nav-btn .nav-icon { font-size: 20px; transition: transform .2s; }
+  .nav-btn.active .nav-icon { transform: scale(1.15); filter: drop-shadow(0 0 4px var(--green)); }
+  .nav-btn .nav-label { font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+
+  /* ── SECTION HEADING ── */
+  .section-head { margin-bottom: 18px; }
+  .section-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--green); }
+  .section-sub { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 10px;
+  }
+
+  /* ── STAT GRID ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stat-icon { font-size: 26px; }
+  .stat-val { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; }
+  .stat-name { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
+
+  /* ── ALERTS ── */
+  .alert-box { background: #1e100f; border: 1px solid #f0505030; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .alert-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; color: #fca5a5; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .alert-item { background: #2d1515; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+  .alert-item:last-child { margin-bottom: 0; }
+  .alert-zone { font-size: 13px; font-weight: 600; color: #fca5a5; }
+  .alert-msg { font-size: 12px; color: #f8717188; margin-top: 2px; line-height: 1.4; }
+  .alert-time { font-size: 11px; color: #6b7280; float: right; margin-top: -20px; }
+
+  /* ── QUICK ACTIONS ── */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quick-btn {
+    background: #2dda7210; border: 1px solid #2dda7228;
+    border-radius: 10px; padding: 13px 10px;
+    color: #a7f3c4; font-size: 13px; cursor: pointer;
+    text-align: left; font-family: 'DM Sans', sans-serif;
+    transition: all .15s;
+  }
+  .quick-btn:active { background: #2dda7222; transform: scale(.97); }
+
+  /* ── UPLOAD AREA ── */
+  #upload-zone {
+    background: var(--surface);
+    border: 2px dashed #2dda7230;
+    border-radius: var(--radius);
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: border-color .2s;
+  }
+  #upload-zone:active { border-color: var(--green); }
+  #upload-zone img { max-height: 200px; max-width: 100%; border-radius: 10px; object-fit: contain; }
+  .upload-icon { font-size: 44px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; color: var(--green); font-weight: 600; margin-bottom: 3px; }
+  .upload-hint { font-size: 12px; color: var(--text-muted); }
+
+  /* ── ANALYZE BUTTON ── */
+  #analyze-btn {
+    width: 100%; background: linear-gradient(135deg, #1a8a46, #2dda72);
+    border: none; border-radius: 12px; padding: 16px;
+    color: #fff; font-size: 15px; font-weight: 700;
+    font-family: 'Syne', sans-serif; letter-spacing: .5px;
+    cursor: pointer; box-shadow: 0 4px 24px #2dda7240;
+    margin-bottom: 16px; display: none;
+    transition: transform .15s;
+  }
+  #analyze-btn:active { transform: scale(.97); }
+
+  /* ── SPINNER ── */
+  #spinner {
+    display: none; text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 16px; margin-bottom: 14px;
+  }
+  .spin-icon { font-size: 36px; display: inline-block; animation: rot 1s linear infinite; margin-bottom: 8px; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+  .spin-text { font-size: 14px; color: var(--green); font-weight: 600; }
+  .spin-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ── RESULT CARD ── */
+  #result-card { display: none; margin-bottom: 14px; border-radius: var(--radius); overflow: hidden; border: 1px solid #2dda7240; }
+  .result-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .result-disease { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; }
+  .severity-badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; font-family: 'Syne', sans-serif; }
+  .result-body { background: var(--surface); padding: 16px; }
+  .conf-row { background: #ffffff08; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; margin-bottom: 14px; }
+  .conf-label { font-size: 12px; color: var(--text-muted); }
+  .conf-val { font-size: 13px; font-weight: 700; color: var(--green); }
+  .result-section { margin-bottom: 12px; }
+  .result-section-label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: 'Syne', sans-serif; }
+  .result-section-val { font-size: 13px; color: #d1fae5cc; line-height: 1.6; }
+  #retry-btn { width: 100%; background: none; border: 1px solid #2dda7230; border-radius: 10px; padding: 11px; color: var(--green); cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; }
+
+  /* ── NDVI ── */
+  .ndvi-legend { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; }
+  .ndvi-bar { height: 14px; border-radius: 7px; background: linear-gradient(to right,#f05050,#eab308,#84cc16,#2dda72,#166534); margin: 8px 0 4px; }
+  .ndvi-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+  .zone-card { background: var(--surface); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; border-left: 3px solid; }
+  .zone-name { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .zone-bar-bg { height: 9px; background: #ffffff12; border-radius: 5px; overflow: hidden; flex: 1; }
+  .zone-bar-fill { height: 100%; border-radius: 5px; }
+  .zone-row { display: flex; align-items: center; gap: 10px; }
+  .zone-val { font-size: 15px; font-weight: 800; font-family: 'Syne', sans-serif; min-width: 38px; text-align: right; }
+  .zone-status { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-left: auto; font-family: 'Syne', sans-serif; }
+  .zone-warn { font-size: 11px; color: #fca5a5; margin-top: 6px; }
+  .carbon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .carbon-item { background: #ffffff06; border-radius: 8px; padding: 10px; }
+  .carbon-item-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+  .carbon-item-val { font-size: 15px; font-weight: 700; color: var(--green); margin-top: 3px; font-family: 'Syne', sans-serif; }
+
+  /* ── SOIL ── */
+  .soil-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  .soil-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .soil-name { font-size: 14px; font-weight: 600; }
+  .soil-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; font-family: 'Syne', sans-serif; }
+  .soil-val-row { display: flex; align-items: baseline; gap: 6px; }
+  .soil-val { font-size: 26px; font-weight: 800; color: var(--green); font-family: 'Syne', sans-serif; }
+  .soil-unit { font-size: 12px; color: var(--text-muted); }
+  .soil-ideal { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+  .fert-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .fert-item:last-child { border-bottom: none; }
+  .fert-icon { font-size: 18px; }
+  .fert-nutrient { font-size: 13px; font-weight: 700; }
+  .fert-action { font-size: 12px; color: #d1fae5aa; margin-top: 2px; line-height: 1.5; }
+
+  /* ── ABOUT ── */
+  .about-hero { background: linear-gradient(135deg, #0e2016, #162a1e); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; text-align: center; margin-bottom: 14px; }
+  .about-logo { font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 0 12px var(--green)); }
+  .about-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: var(--green); margin-bottom: 4px; }
+  .about-ver { font-size: 12px; color: var(--text-muted); }
+  .about-desc { font-size: 13px; color: #c4e8d0; line-height: 1.7; margin-top: 12px; }
+  .feature-list { list-style: none; }
+  .feature-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.5; }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list li span:first-child { font-size: 18px; flex-shrink: 0; }
+  .share-btn {
+    width: 100%; background: linear-gradient(135deg, #1a8a46, #2dda72);
+    border: none; border-radius: 12px; padding: 16px;
+    color: #fff; font-size: 15px; font-weight: 700;
+    font-family: 'Syne', sans-serif; letter-spacing: .5px;
+    cursor: pointer; box-shadow: 0 4px 24px #2dda7240;
+    margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .15s;
+  }
+  .share-btn:active { transform: scale(.97); }
+  .install-steps { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .install-step { display: flex; gap: 12px; margin-bottom: 12px; }
+  .install-step:last-child { margin-bottom: 0; }
+  .step-num { width: 26px; height: 26px; background: var(--green); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; font-family: 'Syne', sans-serif; flex-shrink: 0; }
+  .step-text { font-size: 13px; color: var(--text); line-height: 1.5; padding-top: 3px; }
+  .step-text strong { color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div>
+      <div class="logo-text">AgroSense AI</div>
+      <div class="logo-sub">Farm Monitor</div>
+    </div>
+  </div>
+  <div class="live-badge"><div class="live-dot"></div> Live</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+
+  <!-- DASHBOARD -->
+  <div class="tab-pane active" id="tab-dashboard">
+    <div class="section-head">
+      <div class="section-title">Farm Overview</div>
+      <div class="section-sub">Real-time monitoring across all zones</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card" style="border-color:#2dda7230">
+        <div class="stat-icon">🌱</div>
+        <div>
+          <div class="stat-val" style="color:#2dda72">73%</div>
+          <div class="stat-name">Health Score</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-color:#f0c04030">
+        <div class="stat-icon">⚠️</div>
+        <div>
+          <div class="stat-val" style="color:#f0c040">2</div>
+          <div class="stat-name">Active Alerts</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-color:#50a8f030">
+        <div class="stat-icon">🛰️</div>
+        <div>
+          <div class="stat-val" style="color:#50a8f0">4</div>
+          <div class="stat-name">Zones</div>
+        </div>
+      </div>
+      <div class="stat-card" style="border-color:#a78bfa30">
+        <div class="stat-icon">🕐</div>
+        <div>
+          <div class="stat-val" style="color:#a78bfa;font-size:15px">2h ago</div>
+          <div class="stat-name">Last Scan</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-box">
+      <div class="alert-title">⚠ Active Alerts</div>
+      <div class="alert-item">
+        <div class="alert-zone">Zone C — South Field</div>
+        <div class="alert-msg">NDVI dropped below 0.4 — possible drought stress or disease</div>
+        <div class="alert-time">1h ago</div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-zone">Zone D — West Field</div>
+        <div class="alert-msg">Critical NDVI 0.19 — inspect for pest damage immediately</div>
+        <div class="alert-time">2h ago</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Quick Actions</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="switchTab('detect')">🔍 Scan Leaf Disease</button>
+        <button class="quick-btn" onclick="switchTab('satellite')">🛰️ NDVI Map</button>
+        <button class="quick-btn" onclick="switchTab('soil')">🌱 Soil Health</button>
+        <button class="quick-btn" onclick="switchTab('about')">📤 Share App</button>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#2dda7220;background:linear-gradient(135deg,#0e2016,#162a1e)">
+      <div class="card-label">Today's Tip</div>
+      <div style="font-size:13px;color:#c4e8d0;line-height:1.7">
+        🌦️ Rainfall expected tomorrow. Consider holding fertilizer application until soil moisture normalises. Check Zone C and D after rain for signs of fungal growth.
+      </div>
+    </div>
+  </div>
+
+  <!-- AI DETECT -->
+  <div class="tab-pane" id="tab-detect">
+    <div class="section-head">
+      <div class="section-title">AI Disease Detector</div>
+      <div class="section-sub">Upload a crop photo for instant AI diagnosis</div>
+    </div>
+
+    <div id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div id="upload-placeholder">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Tap to take or upload photo</div>
+        <div class="upload-hint">Point at a leaf, stem, or affected area</div>
+      </div>
+      <img id="preview-img" style="display:none"/>
+    </div>
+    <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleFile(event)"/>
+
+    <button id="analyze-btn" onclick="analyzeImage()">🔬 Analyze with AI</button>
+
+    <div id="spinner">
+      <div class="spin-icon">🔬</div>
+      <div class="spin-text">AI is analyzing your crop…</div>
+      <div class="spin-sub">Scanning for diseases, pests & deficiencies</div>
+    </div>
+
+    <div id="result-card">
+      <div class="result-header" id="result-header">
+        <div class="result-disease" id="result-disease">—</div>
+        <div class="severity-badge" id="severity-badge">—</div>
+      </div>
+      <div class="result-body">
+        <div class="conf-row">
+          <span class="conf-label">AI Confidence</span>
+          <span class="conf-val" id="conf-val">—</span>
+        </div>
+        <div class="result-section">
+          <div class="result-section-label">🔍 Symptoms</div>
+          <div class="result-section-val" id="r-symptoms">—</div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-label">💊 Treatment</div>
+          <div class="result-section-val" id="r-treatment">—</div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-label">🛡️ Prevention</div>
+          <div class="result-section-val" id="r-prevention">—</div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-label">🌱 Fertilizer Advice</div>
+          <div class="result-section-val" id="r-fertilizer">—</div>
+        </div>
+        <button id="retry-btn" onclick="resetDetect()">+ Analyze Another Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SATELLITE -->
+  <div class="tab-pane" id="tab-satellite">
+    <div class="section-head">
+      <div class="section-title">Satellite NDVI</div>
+      <div class="section-sub">Vegetation index from Landsat / Sentinel via Google Earth Engine</div>
+    </div>
+
+    <div class="ndvi-legend card">
+      <div class="card-label">NDVI Scale — Plant Health Index</div>
+      <div class="ndvi-bar"></div>
+      <div class="ndvi-labels">
+        <span>0.0 Bare/Dead</span><span>0.3 Sparse</span><span>0.6 Moderate</span><span>1.0 Dense</span>
+      </div>
+    </div>
+
+    <div class="zone-card" style="border-color:#2dda72;background:var(--surface)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="zone-name">Zone A — North Field</div>
+        <div class="zone-status" style="color:#2dda72;background:#2dda7220">Excellent</div>
+      </div>
+      <div class="zone-row">
+        <div class="zone-bar-bg"><div class="zone-bar-fill" style="width:82%;background:#2dda72;box-shadow:0 0 8px #2dda7266"></div></div>
+        <div class="zone-val" style="color:#2dda72">0.82</div>
+      </div>
+    </div>
+
+    <div class="zone-card" style="border-color:#84cc16;background:var(--surface)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="zone-name">Zone B — East Field</div>
+        <div class="zone-status" style="color:#84cc16;background:#84cc1620">Good</div>
+      </div>
+      <div class="zone-row">
+        <div class="zone-bar-bg"><div class="zone-bar-fill" style="width:61%;background:#84cc16;box-shadow:0 0 8px #84cc1666"></div></div>
+        <div class="zone-val" style="color:#84cc16">0.61</div>
+      </div>
+    </div>
+
+    <div class="zone-card" style="border-color:#f0c040;background:var(--surface)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="zone-name">Zone C — South Field</div>
+        <div class="zone-status" style="color:#f0c040;background:#f0c04020">Stressed</div>
+      </div>
+      <div class="zone-row">
+        <div class="zone-bar-bg"><div class="zone-bar-fill" style="width:38%;background:#f0c040;box-shadow:0 0 8px #f0c04066"></div></div>
+        <div class="zone-val" style="color:#f0c040">0.38</div>
+      </div>
+      <div class="zone-warn">⚠ Action needed — scan for disease in AI Detect tab</div>
+    </div>
+
+    <div class="zone-card" style="border-color:#f05050;background:var(--surface)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="zone-name">Zone D — West Field</div>
+        <div class="zone-status" style="color:#f05050;background:#f0505020">Critical</div>
+      </div>
+      <div class="zone-row">
+        <div class="zone-bar-bg"><div class="zone-bar-fill" style="width:19%;background:#f05050;box-shadow:0 0 8px #f0505066"></div></div>
+        <div class="zone-val" style="color:#f05050">0.19</div>
+      </div>
+      <div class="zone-warn">🔴 Critical — inspect immediately for pest or drought damage</div>
+    </div>
+
+    <div class="card" style="border-color:#2dda7230;background:linear-gradient(135deg,#0e2016,#162a1e)">
+      <div class="card-label">🌍 Carbon & Moisture Estimation</div>
+      <div class="carbon-grid">
+        <div class="carbon-item"><div class="carbon-item-label">Carbon Stored</div><div class="carbon-item-val">12.4 t/ha</div></div>
+        <div class="carbon-item"><div class="carbon-item-label">CO₂ Equivalent</div><div class="carbon-item-val">45.5 t/ha</div></div>
+        <div class="carbon-item"><div class="carbon-item-label">NDMI Moisture</div><div class="carbon-item-val">0.54</div></div>
+        <div class="carbon-item"><div class="carbon-item-label">Biomass Index</div><div class="carbon-item-val">Moderate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOIL -->
+  <div class="tab-pane" id="tab-soil">
+    <div class="section-head">
+      <div class="section-title">Soil Health</div>
+      <div class="section-sub">IoT sensor readings + AI recommendations</div>
+    </div>
+
+    <div class="soil-card">
+      <div class="soil-header">
+        <div class="soil-name">pH Level</div>
+        <div class="soil-status" style="color:#2dda72;background:#2dda7220">Optimal</div>
+      </div>
+      <div class="soil-val-row">
+        <div class="soil-val">6.4</div>
+        <div class="soil-unit"></div>
+        <div class="soil-ideal">Ideal: 6.0–7.0</div>
+      </div>
+    </div>
+
+    <div class="soil-card">
+      <div class="soil-header">
+        <div class="soil-name">Nitrogen (N)</div>
+        <div class="soil-status" style="color:#84cc16;background:#84cc1620">Good</div>
+      </div>
+      <div class="soil-val-row">
+        <div class="soil-val">42</div>
+        <div class="soil-unit">mg/kg</div>
+        <div class="soil-ideal">Ideal: &gt;40</div>
+      </div>
+    </div>
+
+    <div class="soil-card">
+      <div class="soil-header">
+        <div class="soil-name">Phosphorus (P)</div>
+        <div class="soil-status" style="color:#f0c040;background:#f0c04020">Low ⚠</div>
+      </div>
+      <div class="soil-val-row">
+        <div class="soil-val" style="color:#f0c040">18</div>
+        <div class="soil-unit">mg/kg</div>
+        <div class="soil-ideal">Ideal: &gt;20</div>
+      </div>
+    </div>
+
+    <div class="soil-card">
+      <div class="soil-header">
+        <div class="soil-name">Soil Moisture</div>
+        <div class="soil-status" style="color:#2dda72;background:#2dda7220">Optimal</div>
+      </div>
+      <div class="soil-val-row">
+        <div class="soil-val">67</div>
+        <div class="soil-unit">%</div>
+        <div class="soil-ideal">Ideal: 60–75%</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#2dda7230">
+      <div class="card-label">🌱 AI Fertilizer Recommendations</div>
+      <div class="fert-item">
+        <div class="fert-icon">🔴</div>
+        <div>
+          <div class="fert-nutrient" style="color:#fca5a5">Phosphorus — Urgent</div>
+          <div class="fert-action">Apply DAP fertilizer — 50 kg/hectare this week before rainfall</div>
+        </div>
+      </div>
+      <div class="fert-item">
+        <div class="fert-icon">🟡</div>
+        <div>
+          <div class="fert-nutrient" style="color:#f0c040">Organic Matter</div>
+          <div class="fert-action">Add compost or animal manure to boost microbial activity and water retention</div>
+        </div>
+      </div>
+      <div class="fert-item">
+        <div class="fert-icon">🟢</div>
+        <div>
+          <div class="fert-nutrient" style="color:#2dda72">Potassium (K)</div>
+          <div class="fert-action">Levels stable. Re-test in 30 days. No action needed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT / SHARE -->
+  <div class="tab-pane" id="tab-about">
+    <div class="about-hero">
+      <div class="about-logo">🌿</div>
+      <div class="about-name">AgroSense AI</div>
+      <div class="about-ver">Version 1.0 · Farm Intelligence Platform</div>
+      <div class="about-desc">
+        Built for smallholder and commercial farmers — combining AI, satellite imagery, and soil sensors to protect crops and boost yields.
+      </div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid #1e3d2a">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Created by</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--green);letter-spacing:.5px">Adnan</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:600;font-size:13px;color:#a7f3c4;letter-spacing:3px;text-transform:uppercase;margin-top:3px">AgriTech Vision</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+          <span style="background:#2dda7218;border:1px solid #2dda7230;border-radius:20px;padding:4px 12px;font-size:11px;color:#86efac">👨‍💻 Developer</span>
+          <span style="background:#2dda7218;border:1px solid #2dda7230;border-radius:20px;padding:4px 12px;font-size:11px;color:#86efac">🎨 Designer</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">App Features</div>
+      <ul class="feature-list">
+        <li><span>🔬</span><span>AI disease & pest detection from leaf photos — real-time diagnosis with treatment advice</span></li>
+        <li><span>🛰️</span><span>NDVI satellite monitoring — track vegetation health across all farm zones</span></li>
+        <li><span>🌍</span><span>Carbon & moisture estimation using NDVI and NDMI formulas</span></li>
+        <li><span>🌱</span><span>Soil health monitoring with IoT sensors — pH, N, P, moisture readings</span></li>
+        <li><span>⚠️</span><span>Smart alerts when zones drop below healthy thresholds</span></li>
+        <li><span>💊</span><span>AI-powered fertilizer and treatment recommendations</span></li>
+      </ul>
+    </div>
+
+    <div class="install-steps">
+      <div class="card-label">📲 Install on Your Phone</div>
+      <div class="install-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Open this file in your phone browser (<strong>Chrome</strong> on Android or <strong>Safari</strong> on iPhone)</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Tap the <strong>Share</strong> or <strong>Menu</strong> button (⋮ on Android, □↑ on iPhone)</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Select <strong>"Add to Home Screen"</strong> — the app icon will appear like a native app</div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">4</div>
+        <div class="step-text">Open from your home screen — it runs fullscreen with no browser bar!</div>
+      </div>
+    </div>
+
+    <button class="share-btn" onclick="shareApp()">
+      <span>📤</span> Share AgroSense AI
+    </button>
+
+    <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:14px;line-height:1.8">
+      © 2026 <span style="color:#86efac;font-weight:600">Adnan · AgriTech Vision</span><br/>
+      Powered by Anthropic Claude AI<br/>
+      Designed for African farmers 🌍
+    </div>
+  </div>
+
+</div><!-- end content -->
+
+<!-- BOTTOM NAV -->
+<nav id="nav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="switchTab('dashboard')">
+    <div class="nav-icon">◈</div>
+    <div class="nav-label">Home</div>
+  </button>
+  <button class="nav-btn" id="nav-detect" onclick="switchTab('detect')">
+    <div class="nav-icon">⬡</div>
+    <div class="nav-label">AI Detect</div>
+  </button>
+  <button class="nav-btn" id="nav-satellite" onclick="switchTab('satellite')">
+    <div class="nav-icon">◎</div>
+    <div class="nav-label">Satellite</div>
+  </button>
+  <button class="nav-btn" id="nav-soil" onclick="switchTab('soil')">
+    <div class="nav-icon">◉</div>
+    <div class="nav-label">Soil</div>
+  </button>
+  <button class="nav-btn" id="nav-about" onclick="switchTab('about')">
+    <div class="nav-icon">◷</div>
+    <div class="nav-label">About</div>
+  </button>
+</nav>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  document.getElementById('content').scrollTop = 0;
+}
+
+// ── FILE UPLOAD ──
+let currentFile = null;
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  currentFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('upload-placeholder').style.display = 'none';
+    const img = document.getElementById('preview-img');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('analyze-btn').style.display = 'block';
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('spinner').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── RESET ──
+function resetDetect() {
+  currentFile = null;
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('analyze-btn').style.display = 'none';
+  document.getElementById('result-card').style.display = 'none';
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+
+// ── ANALYZE ──
+async function analyzeImage() {
+  if (!currentFile) return;
+  document.getElementById('analyze-btn').style.display = 'none';
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('result-card').style.display = 'none';
+
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = () => rej(new Error('Read failed'));
+      r.readAsDataURL(currentFile);
+    });
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: currentFile.type || 'image/jpeg', data: base64 } },
+            { type: 'text', text: `You are an expert agricultural AI. Analyze this plant/crop image and return ONLY valid JSON (no markdown, no backticks, no extra text):
+{"disease":"name or Healthy Plant","severity":"None|Low|Medium|High","confidence":0-100,"symptoms":"visible symptoms description","treatment":"specific treatment steps","prevention":"prevention measures","fertilizer":"fertilizer recommendation for better yield"}` }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = (data.content || []).map(i => i.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const r = JSON.parse(clean);
+    showResult(r);
+  } catch(err) {
+    showResult({
+      disease: 'Analysis Error',
+      severity: 'Unknown',
+      confidence: 0,
+      symptoms: 'Could not process image. Please try a clearer photo.',
+      treatment: 'Retake photo in good lighting, close to the affected area.',
+      prevention: 'Ensure camera is focused on the plant.',
+      fertilizer: 'N/A — retry analysis first.'
+    });
+  }
+}
+
+// ── SHOW RESULT ──
+function showResult(r) {
+  document.getElementById('spinner').style.display = 'none';
+
+  const colors = { None:'#2dda72', Low:'#84cc16', Medium:'#f0c040', High:'#f05050', Unknown:'#6b7280' };
+  const c = colors[r.severity] || '#6b7280';
+
+  const header = document.getElementById('result-header');
+  header.style.background = c + '22';
+  header.style.borderBottom = '1px solid ' + c + '44';
+
+  document.getElementById('result-disease').textContent = r.disease;
+  document.getElementById('result-disease').style.color = c;
+
+  const badge = document.getElementById('severity-badge');
+  badge.textContent = (r.severity || 'Unknown') + ' Risk';
+  badge.style.background = c;
+  badge.style.color = '#000';
+
+  document.getElementById('conf-val').textContent = r.confidence + '%';
+  document.getElementById('r-symptoms').textContent = r.symptoms;
+  document.getElementById('r-treatment').textContent = r.treatment;
+  document.getElementById('r-prevention').textContent = r.prevention;
+  document.getElementById('r-fertilizer').textContent = r.fertilizer;
+
+  document.getElementById('result-card').style.display = 'block';
+  document.getElementById('result-card').style.borderColor = c + '55';
+}
+
+// ── SHARE ──
+async function shareApp() {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'AgroSense AI — Farm Monitor',
+        text: 'I use this AI app to monitor crop diseases, satellite NDVI, and soil health on my farm. Try it!',
+        url: window.location.href
+      });
+    } catch(e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('Link copied! Share it with other farmers.');
+    } catch(e) {
+      alert('Share this page URL with other farmers to give them access to AgroSense AI.');
+    }
+  }
+}
+</script>
+</body>
+</html>
