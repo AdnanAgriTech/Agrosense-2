@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="MediPlant AI"/>
+<meta name="theme-color" content="#071a0e"/>
+<title>MediPlant AI — by Adnan AgriTech Vision</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Syne+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #071a0e;
+  --surface: #0c2315;
+  --surface2: #112b1c;
+  --border: #1c4028;
+  --green: #3effa0;
+  --green-dim: #1a8a50;
+  --green-glow: #3effa030;
+  --amber: #ffb830;
+  --red: #ff5050;
+  --blue: #50c8ff;
+  --text: #e8f5ee;
+  --text-dim: #6aaa84;
+  --text-muted: #2e6644;
+  --radius: 16px;
+  --nav-h: 66px;
+  --hdr-h: 62px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex; flex-direction: column;
+  height: 100dvh;
+}
+
+/* HEADER */
+#hdr {
+  height: var(--hdr-h);
+  background: linear-gradient(180deg,#0c2315,#071a0e);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px; flex-shrink: 0; z-index: 10;
+  position: relative;
+}
+.hdr-logo { display: flex; align-items: center; gap: 10px; }
+.hdr-icon {
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at 35% 30%, #5fffb8, #0e7a40);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: 0 0 20px var(--green-glow);
+}
+.hdr-title { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 18px; color: var(--green); }
+.hdr-sub { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 1px; }
+.hdr-badge {
+  background: #3effa015; border: 1px solid #3effa030;
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 10px; color: var(--green);
+  font-family: 'Syne Mono', monospace;
+  display: flex; align-items: center; gap: 5px;
+}
+.hdr-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: glow 1.6s ease-in-out infinite; box-shadow: 0 0 6px var(--green); }
+@keyframes glow { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* SCROLL */
+#content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 16px calc(var(--nav-h) + 16px);
+}
+.pane { display: none; animation: up .3s ease; }
+.pane.active { display: block; }
+@keyframes up { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* NAV */
+#nav {
+  height: var(--nav-h);
+  background: #0c2315;
+  border-top: 1px solid var(--border);
+  display: flex; flex-shrink: 0; z-index: 10;
+}
+.nb {
+  flex: 1; background: none; border: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; color: var(--text-muted);
+  transition: color .2s;
+  padding-bottom: env(safe-area-inset-bottom,0px);
+}
+.nb.active { color: var(--green); }
+.nb .ni { font-size: 21px; transition: transform .2s; }
+.nb.active .ni { transform: scale(1.2); filter: drop-shadow(0 0 5px var(--green)); }
+.nb .nl { font-size: 9px; font-family: 'Syne Mono', monospace; letter-spacing: .5px; text-transform: uppercase; }
+
+/* SECTION HEAD */
+.sh { margin-bottom: 18px; }
+.sh-title { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 22px; color: var(--green); }
+.sh-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+
+/* CARD */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.clabel { font-family: 'Syne Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+
+/* HOME HERO */
+.home-hero {
+  background: linear-gradient(135deg, #0c2315 0%, #112b1c 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.home-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, #3effa010 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-emoji { font-size: 52px; margin-bottom: 10px; display: block; filter: drop-shadow(0 0 16px #3effa060); }
+.hero-h { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 26px; color: var(--green); margin-bottom: 6px; line-height: 1.1; }
+.hero-p { font-size: 13px; color: #a0d8b4; line-height: 1.7; }
+
+/* CAPABILITY PILLS */
+.cap-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0; justify-content: center; }
+.cap-pill {
+  background: #3effa012; border: 1px solid #3effa025;
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 11px; color: #a0d8b4;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* QUICK SCAN BTN */
+.scan-cta {
+  width: 100%;
+  background: linear-gradient(135deg, #0e7a40, #3effa0);
+  border: none; border-radius: 12px; padding: 16px;
+  color: #000; font-size: 15px; font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer; box-shadow: 0 4px 24px #3effa030;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform .15s; margin-bottom: 14px;
+}
+.scan-cta:active { transform: scale(.97); }
+
+/* STAT ROW */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--green); }
+.stat-lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* RECENT */
+.recent-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-icon { font-size: 24px; width: 40px; height: 40px; background: var(--surface2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.recent-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.recent-tag { font-size: 11px; color: var(--text-dim); }
+.recent-safe { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-family: 'Syne Mono', monospace; margin-left: auto; white-space: nowrap; }
+
+/* SCAN PAGE */
+.upload-zone {
+  background: var(--surface);
+  border: 2px dashed #3effa025;
+  border-radius: var(--radius);
+  padding: 30px 16px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+  min-height: 180px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+}
+.upload-zone:active { border-color: var(--green); }
+.uz-icon { font-size: 46px; margin-bottom: 10px; }
+.uz-text { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--green); margin-bottom: 4px; }
+.uz-hint { font-size: 12px; color: var(--text-muted); }
+#prev-img { max-height: 220px; max-width: 100%; border-radius: 12px; object-fit: contain; display: none; }
+
+.analyze-btn {
+  width: 100%; background: linear-gradient(135deg, #0e7a40, #3effa0);
+  border: none; border-radius: 12px; padding: 16px;
+  color: #000; font-size: 15px; font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer; box-shadow: 0 4px 24px #3effa030;
+  margin-bottom: 14px; display: none;
+  transition: transform .15s;
+}
+.analyze-btn:active { transform: scale(.97); }
+
+/* SPINNER */
+.spinner {
+  display: none; text-align: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 30px 16px; margin-bottom: 14px;
+}
+.sp-icon { font-size: 38px; display: inline-block; animation: rot 1.2s linear infinite; margin-bottom: 10px; }
+@keyframes rot { to{transform:rotate(360deg)} }
+.sp-text { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--green); margin-bottom: 4px; }
+.sp-sub { font-size: 12px; color: var(--text-muted); }
+
+/* RESULT */
+#result-wrap { display: none; }
+.result-top {
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 16px 18px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.result-name { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 20px; line-height: 1.2; margin-bottom: 4px; }
+.result-sci { font-size: 12px; font-style: italic; opacity: .7; }
+.safety-badge { font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 20px; font-family: 'Syne Mono', monospace; white-space: nowrap; margin-left: 8px; flex-shrink: 0; }
+.result-body { background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); padding: 18px; margin-bottom: 14px; }
+
+/* RESULT SECTIONS */
+.rsec { margin-bottom: 16px; }
+.rsec-label {
+  font-family: 'Syne Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.rsec-val { font-size: 13px; color: #d4edd9; line-height: 1.7; }
+
+/* DANGER BOX */
+.danger-box {
+  background: #ff505012; border: 1px solid #ff505030;
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+}
+.danger-title { color: var(--red); font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.danger-val { font-size: 13px; color: #ffaaaa; line-height: 1.7; }
+
+/* BENEFIT BOX */
+.benefit-box {
+  background: #3effa010; border: 1px solid #3effa025;
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
+}
+.benefit-title { color: var(--green); font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.benefit-val { font-size: 13px; color: #a0d8b4; line-height: 1.7; }
+
+/* DOSAGE BOX */
+.dosage-box {
+  background: #ffb83010; border: 1px solid #ffb83030;
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
+}
+.dosage-title { color: var(--amber); font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.dosage-val { font-size: 13px; color: #ffe0a0; line-height: 1.7; }
+
+.conf-row { background: #ffffff08; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; margin-bottom: 14px; }
+.retry-btn { width: 100%; background: none; border: 1px solid #3effa025; border-radius: 10px; padding: 12px; color: var(--green); cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; margin-top: 4px; }
+
+/* LIBRARY */
+.lib-search {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; color: var(--text);
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  margin-bottom: 14px; outline: none;
+}
+.lib-search:focus { border-color: var(--green-dim); }
+.lib-search::placeholder { color: var(--text-muted); }
+.filter-row { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 11px; color: var(--text-dim);
+  cursor: pointer; font-family: 'Syne Mono', monospace;
+  transition: all .2s;
+}
+.filter-btn.active { background: #3effa015; border-color: #3effa040; color: var(--green); }
+.plant-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+  display: flex; align-items: flex-start; gap: 12px;
+  cursor: pointer; transition: border-color .2s;
+}
+.plant-card:active { border-color: var(--green-dim); }
+.plant-emoji { font-size: 30px; width: 52px; height: 52px; background: var(--surface2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.plant-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.plant-sci { font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 5px; }
+.plant-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.ptag { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-family: 'Syne Mono', monospace; }
+
+/* ABOUT */
+.about-hero { background: linear-gradient(135deg,#0c2315,#112b1c); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; margin-bottom: 14px; }
+.about-logo { font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 14px #3effa060); }
+.about-name { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 24px; color: var(--green); margin-bottom: 4px; }
+.about-ver { font-size: 11px; color: var(--text-muted); font-family: 'Syne Mono', monospace; }
+.about-desc { font-size: 13px; color: #a0d8b4; line-height: 1.7; margin-top: 12px; }
+.dev-box { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.dev-label { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; font-family: 'Syne Mono', monospace; margin-bottom: 6px; }
+.dev-name { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 20px; color: var(--green); }
+.dev-brand { font-family: 'Syne Mono', monospace; font-size: 11px; color: #3effa080; letter-spacing: 3px; text-transform: uppercase; margin-top: 3px; }
+.dev-badges { display: flex; gap: 7px; justify-content: center; margin-top: 10px; }
+.dev-badge { background: #3effa015; border: 1px solid #3effa030; border-radius: 20px; padding: 4px 12px; font-size: 11px; color: #a0d8b4; }
+.feat-list { list-style: none; }
+.feat-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.5; color: #c4e8d0; }
+.feat-list li:last-child { border-bottom: none; }
+.feat-list li span:first-child { font-size: 17px; flex-shrink: 0; }
+.share-btn {
+  width: 100%; background: linear-gradient(135deg,#0e7a40,#3effa0);
+  border: none; border-radius: 12px; padding: 15px;
+  color: #000; font-size: 14px; font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 24px #3effa030; transition: transform .15s; margin-top: 4px;
+}
+.share-btn:active { transform: scale(.97); }
+.disclaimer { background: #ff505010; border: 1px solid #ff505025; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.disclaimer p { font-size: 12px; color: #ffaaaa; line-height: 1.6; }
+.disclaimer strong { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-icon">🌿</div>
+    <div>
+      <div class="hdr-title">MediPlant AI</div>
+      <div class="hdr-sub">by Adnan AgriTech Vision</div>
+    </div>
+  </div>
+  <div class="hdr-badge"><div class="hdr-dot"></div> AI Ready</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+
+  <!-- HOME -->
+  <div class="pane active" id="pane-home">
+    <div class="home-hero">
+      <span class="hero-emoji">🌿</span>
+      <div class="hero-h">Know Your Plants.<br/>Protect Your Health.</div>
+      <div class="hero-p">Point your camera at any plant, crop, or tree — MediPlant AI identifies it instantly and tells you everything about its health benefits, dangers, and medicinal uses.</div>
+      <div class="cap-row">
+        <div class="cap-pill">✅ Medicinal Benefits</div>
+        <div class="cap-pill">☠️ Poison Warnings</div>
+        <div class="cap-pill">💊 Dosage Guide</div>
+        <div class="cap-pill">🌳 Trees & Crops</div>
+      </div>
+    </div>
+
+    <button class="scan-cta" onclick="switchTab('scan')">
+      📷 Scan a Plant Now
+    </button>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">Plants Known</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">AI</div>
+        <div class="stat-lbl">Powered</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">Free</div>
+        <div class="stat-lbl">Always</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">Recently Identified</div>
+      <div class="recent-item">
+        <div class="recent-icon">🌱</div>
+        <div>
+          <div class="recent-name">Neem Tree</div>
+          <div class="recent-tag">Medicinal · Antibacterial</div>
+        </div>
+        <div class="recent-safe" style="background:#3effa015;color:#3effa0;border:1px solid #3effa030">Safe</div>
+      </div>
+      <div class="recent-item">
+        <div class="recent-icon">🍃</div>
+        <div>
+          <div class="recent-name">Cassava Leaf</div>
+          <div class="recent-tag">Crop · Food · Caution</div>
+        </div>
+        <div class="recent-safe" style="background:#ffb83015;color:#ffb830;border:1px solid #ffb83030">Caution</div>
+      </div>
+      <div class="recent-item">
+        <div class="recent-icon">🌺</div>
+        <div>
+          <div class="recent-name">Datura</div>
+          <div class="recent-tag">Toxic · Dangerous</div>
+        </div>
+        <div class="recent-safe" style="background:#ff505015;color:#ff5050;border:1px solid #ff505030">Danger</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <p><strong>⚕️ Medical Disclaimer:</strong> MediPlant AI provides educational information only. Always consult a qualified doctor or herbalist before using any plant for medicinal purposes.</p>
+    </div>
+  </div>
+
+  <!-- SCAN -->
+  <div class="pane" id="pane-scan">
+    <div class="sh">
+      <div class="sh-title">Plant Scanner</div>
+      <div class="sh-sub">Upload or take a photo of any plant, leaf, crop or tree for full AI analysis</div>
+    </div>
+
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-in').click()">
+      <div id="uz-placeholder">
+        <div class="uz-icon">📷</div>
+        <div class="uz-text">Tap to capture or upload</div>
+        <div class="uz-hint">Works with leaves, fruits, bark, whole plants & trees</div>
+      </div>
+      <img id="prev-img"/>
+    </div>
+    <input type="file" id="file-in" accept="image/*" capture="environment" style="display:none" onchange="handleFile(event)"/>
+
+    <button class="analyze-btn" id="analyze-btn" onclick="analyze()">🔬 Analyze Plant with AI</button>
+
+    <div class="spinner" id="spinner">
+      <div class="sp-icon">🔬</div>
+      <div class="sp-text">Analyzing your plant…</div>
+      <div class="sp-sub">Identifying species · Benefits · Dangers · Medicinal uses</div>
+    </div>
+
+    <div id="result-wrap">
+      <div class="result-top" id="result-top">
+        <div>
+          <div class="result-name" id="r-name">—</div>
+          <div class="result-sci" id="r-sci">—</div>
+        </div>
+        <div class="safety-badge" id="r-safety">—</div>
+      </div>
+      <div class="result-body">
+        <div class="conf-row">
+          <span style="font-size:12px;color:var(--text-muted)">AI Confidence</span>
+          <span style="font-size:13px;font-weight:700;color:var(--green)" id="r-conf">—</span>
+        </div>
+
+        <div class="rsec">
+          <div class="rsec-label" style="color:var(--text-dim)">🌍 About This Plant</div>
+          <div class="rsec-val" id="r-about">—</div>
+        </div>
+
+        <div class="benefit-box">
+          <div class="benefit-title">✅ Health Benefits</div>
+          <div class="benefit-val" id="r-benefits">—</div>
+        </div>
+
+        <div class="danger-box">
+          <div class="danger-title">☠️ Dangers & Toxicity</div>
+          <div class="danger-val" id="r-dangers">—</div>
+        </div>
+
+        <div class="dosage-box">
+          <div class="dosage-title">💊 Medicinal Usage & Dosage</div>
+          <div class="dosage-val" id="r-dosage">—</div>
+        </div>
+
+        <div class="rsec">
+          <div class="rsec-label" style="color:var(--text-dim)">⚠️ Who Should Avoid It</div>
+          <div class="rsec-val" id="r-avoid">—</div>
+        </div>
+
+        <div class="rsec">
+          <div class="rsec-label" style="color:var(--text-dim)">🌱 Traditional African Use</div>
+          <div class="rsec-val" id="r-traditional">—</div>
+        </div>
+
+        <div class="disclaimer" style="margin-top:4px">
+          <p><strong>⚕️ Reminder:</strong> This is educational information only. Consult a qualified health professional before using any plant medicinally.</p>
+        </div>
+
+        <button class="retry-btn" onclick="resetScan()">+ Scan Another Plant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div class="pane" id="pane-library">
+    <div class="sh">
+      <div class="sh-title">Plant Library</div>
+      <div class="sh-sub">Browse common medicinal plants, crops & trees</div>
+    </div>
+
+    <input class="lib-search" placeholder="🔍  Search plants…" oninput="filterPlants(this.value)"/>
+
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('medicinal',this)">Medicinal</button>
+      <button class="filter-btn" onclick="setFilter('crop',this)">Crops</button>
+      <button class="filter-btn" onclick="setFilter('tree',this)">Trees</button>
+      <button class="filter-btn" onclick="setFilter('toxic',this)">Toxic ☠️</button>
+    </div>
+
+    <div id="plant-list"></div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="pane" id="pane-about">
+    <div class="about-hero">
+      <div class="about-logo">🌿</div>
+      <div class="about-name">MediPlant AI</div>
+      <div class="about-ver" style="margin-bottom:4px">Version 1.0 · Plant Intelligence Platform</div>
+      <div class="about-desc">Helping communities across Africa and the world identify plants, understand their healing power, and stay safe from toxic species — using artificial intelligence.</div>
+      <div class="dev-box">
+        <div class="dev-label">Created by</div>
+        <div class="dev-name">Adnan</div>
+        <div class="dev-brand">AgriTech Vision</div>
+        <div class="dev-badges">
+          <div class="dev-badge">👨‍💻 Developer</div>
+          <div class="dev-badge">🎨 Designer</div>
+          <div class="dev-badge">🌍 Innovator</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">App Features</div>
+      <ul class="feat-list">
+        <li><span>📷</span><span>AI plant identification from any photo — leaf, bark, fruit, or whole plant</span></li>
+        <li><span>✅</span><span>Full medicinal health benefits for each identified plant</span></li>
+        <li><span>☠️</span><span>Toxicity and danger warnings — know what's safe before you touch it</span></li>
+        <li><span>💊</span><span>Traditional and modern medicinal usage with dosage guidance</span></li>
+        <li><span>🌍</span><span>African traditional medicine knowledge included</span></li>
+        <li><span>📚</span><span>Plant library to browse hundreds of species</span></li>
+        <li><span>🆓</span><span>Completely free — no subscription, no payment ever</span></li>
+      </ul>
+    </div>
+
+    <div class="disclaimer">
+      <p><strong>⚕️ Medical Disclaimer:</strong> MediPlant AI is for educational purposes only. It is not a substitute for professional medical advice. Always consult a qualified doctor or herbalist before using any plant medicinally.</p>
+    </div>
+
+    <button class="share-btn" onclick="shareApp()">📤 Share MediPlant AI</button>
+
+    <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:14px;line-height:1.8">
+      © 2026 <span style="color:#3effa080">Adnan · AgriTech Vision</span><br/>
+      Powered by Anthropic Claude AI · Built for Africa 🌍
+    </div>
+  </div>
+
+</div><!-- end content -->
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="nb active" id="nb-home" onclick="switchTab('home')">
+    <div class="ni">🏠</div><div class="nl">Home</div>
+  </button>
+  <button class="nb" id="nb-scan" onclick="switchTab('scan')">
+    <div class="ni">📷</div><div class="nl">Scan</div>
+  </button>
+  <button class="nb" id="nb-library" onclick="switchTab('library')">
+    <div class="ni">📚</div><div class="nl">Library</div>
+  </button>
+  <button class="nb" id="nb-about" onclick="switchTab('about')">
+    <div class="ni">ℹ️</div><div class="nl">About</div>
+  </button>
+</nav>
+
+<script>
+// ── TAB ──
+function switchTab(id) {
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  document.getElementById('nb-'+id).classList.add('active');
+  document.getElementById('content').scrollTop=0;
+}
+
+// ── PLANT DATA ──
+const PLANTS = [
+  { emoji:'🌿', name:'Neem', sci:'Azadirachta indica', type:'tree', safety:'safe',
+    tags:['Antibacterial','Antifungal','Immune Boost'],
+    about:'One of the most powerful medicinal trees in Africa and Asia. Every part — leaves, bark, seeds, roots — has medicinal value.',
+    benefits:'Strong antibacterial and antifungal properties. Boosts immune system. Treats skin diseases, malaria, and diabetes. Neem leaves tea reduces fever. Seeds used for natural pesticide.',
+    dangers:'High doses of neem oil can be toxic, especially to children and pregnant women. Never give neem oil directly to infants.',
+    dosage:'Neem leaf tea: 2–3 leaves boiled in water, drink once daily. Neem toothstick: chew fresh twig for dental health. Do not exceed recommended amounts.',
+    avoid:'Pregnant women, infants, people with liver disease or those on immune-suppressing medications.',
+    traditional:'Used across West Africa for treating malaria, skin rashes, and as a natural insect repellent. Hausa people use it as "dogonyaro" for fever.' },
+
+  { emoji:'🍃', name:'Moringa', sci:'Moringa oleifera', type:'tree', safety:'safe',
+    tags:['Superfood','Nutritious','Anti-inflammatory'],
+    about:'Called the "miracle tree" — one of the most nutrient-dense plants on Earth. Common across Northern Nigeria and Sahel Africa.',
+    benefits:'Extremely rich in vitamins A, C, iron, calcium. Fights malnutrition. Anti-inflammatory. Lowers blood sugar and cholesterol. Boosts milk production in breastfeeding mothers.',
+    dangers:'Generally very safe. Very high doses of root extract can have toxic effects. Stick to leaves and pods for food use.',
+    dosage:'Fresh leaves: add to soups and stews daily. Moringa powder: 1 teaspoon per day in water or food. Seeds: 1–2 seeds per day for water purification and nutrition.',
+    avoid:'People on blood thinning medication — consult doctor first. Root bark extract should be avoided by pregnant women.',
+    traditional:'Used across Hausa and Fulani communities as "zogale" — added to soup for nutrition and to treat anaemia in children.' },
+
+  { emoji:'🌺', name:'Hibiscus', sci:'Hibiscus sabdariffa', type:'medicinal', safety:'safe',
+    tags:['Heart Health','Antioxidant','Blood Pressure'],
+    about:'Known as "Zobo" in Nigeria. The dried red calyces are used worldwide as a medicinal drink and food ingredient.',
+    benefits:'Lowers high blood pressure. Rich in antioxidants. Supports liver health. Reduces bad cholesterol. Anti-inflammatory and antibacterial properties.',
+    dangers:'Generally safe in food amounts. Avoid very large amounts as it may lower blood pressure too much or interfere with medications.',
+    dosage:'Zobo drink: boil dried calyces, drink 1–2 cups daily. Do not add excessive sugar. Can be taken cold or warm.',
+    avoid:'People on blood pressure medications — may enhance drug effects too strongly. Pregnant women should consume in moderation.',
+    traditional:'Widely consumed across Nigeria, Ghana, and Sahel as "zobo" or "bissap." Traditional remedy for high blood pressure and liver problems.' },
+
+  { emoji:'🍂', name:'Cassava', sci:'Manihot esculenta', type:'crop', safety:'caution',
+    tags:['Staple Food','Caution','Cyanide Risk'],
+    about:'Most important staple crop in sub-Saharan Africa. Both food and potential danger — must be properly prepared before eating.',
+    benefits:'Rich in carbohydrates and energy. Provides calories for millions. Leaves are a good source of protein and minerals when properly cooked.',
+    dangers:'Raw cassava contains cyanogenic glycosides (natural cyanide). Eating raw or improperly prepared cassava can cause severe poisoning, paralysis, or death. Bitter cassava varieties are especially dangerous.',
+    dosage:'Always cook thoroughly — boil, roast, or ferment before eating. Never eat raw cassava. Peel and soak in water for 24hrs before cooking bitter varieties. Cassava leaves must be boiled and water discarded.',
+    avoid:'Never give raw cassava to children. People with iodine deficiency are at higher risk from cassava toxins.',
+    traditional:'Fermented as "garri" or "fufu" across Nigeria — fermentation removes most cyanide. Traditional knowledge of proper preparation is essential.' },
+
+  { emoji:'🌳', name:'Shea Tree', sci:'Vitellaria paradoxa', type:'tree', safety:'safe',
+    tags:['Skin Health','Nutrition','Anti-inflammatory'],
+    about:'Sacred tree of the Sahel. Shea butter from its nuts is used for food, medicine, and skincare across West Africa.',
+    benefits:'Shea butter deeply moisturises skin and treats eczema, psoriasis, and stretch marks. Anti-inflammatory properties. Shea nuts are edible and nutritious. Bark tea used for fever and joint pain.',
+    dangers:'Very safe for most people. Rare latex allergy in some individuals. Generally well tolerated.',
+    dosage:'Shea butter: apply to skin as needed. Shea bark tea: boil bark, drink small amounts for pain relief. Seeds: consumed as food in traditional communities.',
+    avoid:'People with tree nut allergies should test on small skin area first.',
+    traditional:'Called "kadanya" in Hausa. Women in Katsina, Kano, and Sokoto have used shea for centuries for skin, cooking, and infant care.' },
+
+  { emoji:'☠️', name:'Datura', sci:'Datura stramonium', type:'toxic', safety:'toxic',
+    tags:['TOXIC','Deadly','Hallucination'],
+    about:'Extremely dangerous toxic plant. Found across Africa and worldwide. Also called "jimsonweed" or "devil\'s trumpet." Has been misused with fatal consequences.',
+    benefits:'Has some limited medical use ONLY under strict professional medical supervision — atropine derived from it is used in hospitals. NO safe home use.',
+    dangers:'EXTREMELY TOXIC. All parts are poisonous — seeds, leaves, flowers, roots. Can cause hallucinations, heart failure, coma, and death even in small amounts. Children are especially at risk. Has been used to poison people.',
+    dosage:'⛔ DO NOT USE. There is NO safe dosage for home use. If accidentally ingested — seek emergency hospital care IMMEDIATELY.',
+    avoid:'Everyone. This plant should not be touched, consumed, or used without professional medical supervision.',
+    traditional:'Unfortunately misused in some areas as a poison. Traditional healers may know of it but responsible ones never use it outside controlled settings.' },
+
+  { emoji:'🌾', name:'Turmeric', sci:'Curcuma longa', type:'medicinal', safety:'safe',
+    tags:['Anti-inflammatory','Joint Pain','Antioxidant'],
+    about:'Golden spice used for thousands of years in medicine and cooking. Grown in tropical regions including parts of Africa.',
+    benefits:'Powerful anti-inflammatory — helps with arthritis and joint pain. Antioxidant protecting cells from damage. Supports liver health. May help prevent certain cancers. Improves digestion.',
+    dangers:'Generally very safe. Very high doses may cause stomach upset or worsen gallstone conditions. Can interact with blood thinners.',
+    dosage:'As spice: use freely in cooking. Turmeric tea: 1 teaspoon in warm milk or water daily. Supplement: 500–1000mg curcumin extract per day — consult doctor for medical use.',
+    avoid:'People with gallbladder problems or on blood-thinning medications should consult doctor before taking high doses.',
+    traditional:'Used across North Africa and Middle East in traditional medicine for centuries. Now globally recognised by modern science.' },
+
+  { emoji:'🍀', name:'Aloe Vera', sci:'Aloe barbadensis', type:'medicinal', safety:'safe',
+    tags:['Skin Healing','Burn Relief','Digestive'],
+    about:'One of the most widely used medicinal plants in the world. Easy to grow, widely available across Africa.',
+    benefits:'Soothes burns, cuts, and skin irritation. Moisturises and heals skin conditions. Aloe juice supports digestion. Anti-inflammatory and antibacterial.',
+    dangers:'Aloe latex (yellow sap just under skin) can cause severe diarrhoea and kidney damage if consumed. Only use the clear inner gel for eating. Avoid consuming the yellow latex.',
+    dosage:'Skin use: apply clear inner gel directly to burns, wounds, or skin irritation. Oral use: 1 tablespoon of clear inner gel juice — avoid yellow latex layer.',
+    avoid:'Pregnant women should not consume aloe juice. People with kidney problems or digestive conditions should consult doctor.',
+    traditional:'Used across Africa for skin healing, sunburn relief, and treating digestive issues. Very common in Nigerian and Ghanaian households.' },
+];
+
+let activeFilter = 'all';
+
+function renderPlants(list) {
+  const el = document.getElementById('plant-list');
+  if (!list.length) { el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:30px;font-size:14px">No plants found</div>'; return; }
+  el.innerHTML = list.map(p => {
+    const sc = p.safety==='safe'?'#3effa0':p.safety==='caution'?'#ffb830':'#ff5050';
+    const sb = p.safety==='safe'?'#3effa015':p.safety==='caution'?'#ffb83015':'#ff505015';
+    return `<div class="plant-card" onclick="showPlantDetail('${p.name}')">
+      <div class="plant-emoji">${p.emoji}</div>
+      <div style="flex:1">
+        <div class="plant-name">${p.name}</div>
+        <div class="plant-sci">${p.sci}</div>
+        <div class="plant-tags">
+          <span class="ptag" style="background:${sb};color:${sc};border:1px solid ${sc}40">${p.safety.toUpperCase()}</span>
+          ${p.tags.slice(0,2).map(t=>`<span class="ptag" style="background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterPlants(document.querySelector('.lib-search').value);
+}
+
+function filterPlants(q) {
+  let list = PLANTS;
+  if (activeFilter !== 'all') list = list.filter(p => p.type === activeFilter || (activeFilter==='toxic' && p.safety==='toxic'));
+  if (q) list = list.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.sci.toLowerCase().includes(q.toLowerCase()) || p.tags.some(t=>t.toLowerCase().includes(q.toLowerCase())));
+  renderPlants(list);
+}
+
+function showPlantDetail(name) {
+  const p = PLANTS.find(pl=>pl.name===name);
+  if (!p) return;
+  switchTab('scan');
+  document.getElementById('uz-placeholder').style.display='none';
+  document.getElementById('prev-img').style.display='none';
+  document.getElementById('analyze-btn').style.display='none';
+  document.getElementById('spinner').style.display='none';
+  populateResult({
+    name: p.name, scientific: p.sci, safety: p.safety,
+    confidence: 99, about: p.about, benefits: p.benefits,
+    dangers: p.dangers, dosage: p.dosage, avoid: p.avoid, traditional: p.traditional
+  });
+}
+
+renderPlants(PLANTS);
+
+// ── FILE UPLOAD ──
+let currentFile = null;
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  currentFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('uz-placeholder').style.display='none';
+    const img = document.getElementById('prev-img');
+    img.src = ev.target.result; img.style.display='block';
+    document.getElementById('analyze-btn').style.display='block';
+    document.getElementById('result-wrap').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetScan() {
+  currentFile = null;
+  document.getElementById('prev-img').style.display='none';
+  document.getElementById('uz-placeholder').style.display='flex';
+  document.getElementById('uz-placeholder').style.flexDirection='column';
+  document.getElementById('uz-placeholder').style.alignItems='center';
+  document.getElementById('analyze-btn').style.display='none';
+  document.getElementById('result-wrap').style.display='none';
+  document.getElementById('spinner').style.display='none';
+  document.getElementById('file-in').value='';
+}
+
+// ── ANALYZE ──
+async function analyze() {
+  if (!currentFile) return;
+  document.getElementById('analyze-btn').style.display='none';
+  document.getElementById('spinner').style.display='block';
+  document.getElementById('result-wrap').style.display='none';
+
+  try {
+    const b64 = await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=()=>rej(new Error('fail'));
+      r.readAsDataURL(currentFile);
+    });
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'image',source:{type:'base64',media_type:currentFile.type||'image/jpeg',data:b64}},
+            {type:'text',text:`You are a world-class botanist and ethnomedicinal expert specializing in African plants. Analyze this plant image carefully and respond ONLY with valid JSON (no markdown, no backticks, no extra text):
+{
+  "name": "common name of plant",
+  "scientific": "scientific name",
+  "safety": "safe" or "caution" or "toxic",
+  "confidence": 0-100,
+  "about": "2-3 sentence description of this plant and where it's found",
+  "benefits": "detailed health and medicinal benefits for human health",
+  "dangers": "any toxicity, poison risks, or dangerous side effects - be specific",
+  "dosage": "how to use medicinally - preparation methods and amounts",
+  "avoid": "who should avoid this plant - pregnant women, children, conditions, drug interactions",
+  "traditional": "traditional African or local medicinal uses of this plant"
+}
+If you cannot identify the plant clearly, still provide your best assessment with lower confidence score.`}
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = (data.content||[]).map(i=>i.text||'').join('');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const r = JSON.parse(clean);
+    populateResult(r);
+  } catch(err) {
+    populateResult({
+      name:'Unknown Plant',scientific:'Could not identify',safety:'caution',confidence:0,
+      about:'The AI could not clearly identify this plant. Please try a clearer, closer photo.',
+      benefits:'Unable to determine — please retry with a better photo.',
+      dangers:'Since this plant could not be identified — DO NOT consume it until properly identified by an expert.',
+      dosage:'N/A — identify the plant first.',
+      avoid:'Everyone until properly identified.',
+      traditional:'N/A'
+    });
+  }
+}
+
+function populateResult(r) {
+  document.getElementById('spinner').style.display='none';
+  const sc = r.safety==='safe'?'#3effa0':r.safety==='caution'?'#ffb830':'#ff5050';
+  const sb = r.safety==='safe'?'#3effa020':r.safety==='caution'?'#ffb83020':'#ff505020';
+  const top = document.getElementById('result-top');
+  top.style.background = sb;
+  top.style.borderBottom = `1px solid ${sc}40`;
+  top.style.borderTopLeftRadius = 'var(--radius)';
+  top.style.borderTopRightRadius = 'var(--radius)';
+  document.getElementById('r-name').textContent = r.name;
+  document.getElementById('r-name').style.color = sc;
+  document.getElementById('r-sci').textContent = r.scientific;
+  const badge = document.getElementById('r-safety');
+  badge.textContent = (r.safety||'unknown').toUpperCase();
+  badge.style.background = sc; badge.style.color='#000';
+  document.getElementById('r-conf').textContent = r.confidence+'%';
+  document.getElementById('r-about').textContent = r.about;
+  document.getElementById('r-benefits').textContent = r.benefits;
+  document.getElementById('r-dangers').textContent = r.dangers;
+  document.getElementById('r-dosage').textContent = r.dosage;
+  document.getElementById('r-avoid').textContent = r.avoid;
+  document.getElementById('r-traditional').textContent = r.traditional;
+  document.getElementById('result-wrap').style.display='block';
+}
+
+// ── SHARE ──
+async function shareApp() {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title:'MediPlant AI — by Adnan AgriTech Vision',
+        text:'Use this free AI app to identify any plant and learn its health benefits, dangers, and medicinal uses!',
+        url: window.location.href
+      });
+    } catch(e){}
+  } else {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('Link copied! Share with your community.');
+    } catch(e) {
+      alert('Share this page with your community to help them identify plants safely!');
+    }
+  }
+}
+</script>
+</body>
+</html>
